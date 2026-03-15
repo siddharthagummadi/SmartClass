@@ -5,10 +5,11 @@ from werkzeug.security import generate_password_hash
 
 def get_db():
     return mysql.connector.connect(
-        host=os.getenv('MYSQL_HOST', 'localhost'),
-        user=os.getenv('MYSQL_USER', 'root'),
-        password=os.getenv('MYSQL_PASSWORD', '1605'),
-        database=os.getenv('MYSQL_DATABASE', 'smartclass')
+        host=os.getenv('MYSQL_HOST') or os.getenv('MYSQLHOST') or 'localhost',
+        user=os.getenv('MYSQL_USER') or os.getenv('MYSQLUSER') or 'root',
+        password=os.getenv('MYSQL_PASSWORD') or os.getenv('MYSQLPASSWORD') or '1605',
+        database=os.getenv('MYSQL_DATABASE') or os.getenv('MYSQLDATABASE') or 'smartclass',
+        port=int(os.getenv('MYSQL_PORT') or os.getenv('MYSQLPORT') or 3306)
     )
 
 
