@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mark Manual Attendance</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <style>
+        /* General Styling */
+        body {
+            background: linear-gradient(to right, aqua, skyblue);
+            font-family: 'Arial', sans-serif;
+            height: 100vh;
+            color: white;
+            margin: 0;
+            padding: 0;
+        }
+
+        h2 {
+            color: cornflowerblue;
+            text-align: center;
+            margin-bottom: 30px;
+            font-weight: bold;
+            font-size: 32px;
+            text-transform: uppercase;
+            letter-spacing: 3px;
+        }
+
+        .attendance-container {
+            width: 95%;
+            margin: 0 auto;
+            padding: 30px;
+            background: #fff;
+            box-sizing: border-box;
+            box-shadow: 0px 10px 30px rgba(0, 0, 0, 0.1);
+            border-radius: 10px;
+            margin-top: 50px;
+            overflow-x: auto;
+            max-height: 90vh;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th, td {
+            padding: 15px;
+            text-align: center;
+            border: 1px solid #ddd;
+            font-size: 16px;
+            cursor: pointer;
+        }
+
+        th {
+            background-color: #2575fc;
+            color: white;
+            text-transform: uppercase;
+        }
+
+        tbody tr:nth-child(odd) {
+            background-color: #f9f9f9;
+        }
+
+        tbody tr:nth-child(even) {
+            background-color: #f1f5f9;
+        }
+
+        td:hover {
+            background-color: #e2f0ff;
+            color: #2575fc;
+        }
+
+        /* Submit and Back Buttons Styling */
+        .button-container {
+            text-align: center;
+            margin-top: 20px;
+        }
+
+        .btn-submit, .btn-back {
+            background: linear-gradient(45deg, #2575fc, #6a11cb);
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background 0.3s ease, transform 0.2s ease;
+            display: inline-block;
+            margin: 0 10px;
+        }
+
+        .btn-submit:hover, .btn-back:hover {
+            background: linear-gradient(45deg, #6a11cb, #2575fc);
+            transform: scale(1.05);
+        }
+
+        .btn-back {
+            background-color: #ffc107;
+            font-size: 18px;
+        }
+
+        .btn-back::before {
+            content: '\2190';  /* Unicode for the left arrow */
+            margin-right: 8px;
+            font-size: 18px;
+        }
+
+        /* Notification Popup */
+        .notification-popup {
+            position: fixed;
+            top: -100px; /* Start off-screen */
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: #dc3545;
+            color: white;
+            padding: 15px 30px;
+            border-radius: 8px;
+            box-shadow: 0px 10px 20px rgba(0, 0, 0, 0.2);
+            font-size: 18px;
+            z-index: 1000;
+            opacity: 0;
+            visibility: hidden;
+            transition: top 0.5s ease, opacity 0.5s ease, visibility 0s 0.5s;
+        }
+
+        .notification-popup.show {
+            top: 20px;  /* Position it at the top of the page */
+            opacity: 1;
+            visibility: visible;
+            transition: top 0.5s ease, opacity 0.5s ease;
+        }
+
+        .popup-btn-close {
+            background-color: #dc3545;
+            color: white;
+            padding: 5px 10px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+            float: right;
+        }
+
+        .popup-btn-close:hover {
+            background-color: #c82333;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            th, td {
+                padding: 10px;
+            }
+
+            .btn-submit, .btn-back {
+                font-size: 16px;
+                padding: 10px;
+            }
+        }
+
+    </style>
+</head>
+<body>
+
+    <div class="attendance-container">
+        <h2>Mark Manual Attendance</h2>
+
+        <!-- Attendance Form -->
+        <form id="attendanceForm">
+            <div style="overflow-y: auto; max-height: 70vh;">
+                <table class="table table-bordered">
+                    <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th>Roll Number</th>
+                            <th>Present</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for student in students %}
+                        <tr class="attendance-row">
+                            <td class="student-name" aria-label="Student Name">{{ student[1] }}</td> <!-- Student Name -->
+                            <td>{{ student[2] }}</td> <!-- Roll Number -->
+                            <td>
+                                <input type="checkbox" name="attendance" data-student-id="{{ student[0] }}" class="attendance-checkbox" aria-label="Attendance Checkbox">
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Submit and Back Buttons -->
+            <div class="button-container">
+                <button type="button" class="btn-back" onclick="goBack()">← Back</button>
+                <button type="submit" class="btn-submit" disabled>Submit Attendance</button>
+            </div>
+        </form>
+    </div>
+
+    <!-- Notification Popup -->
+    <div id="notification" class="notification-popup">
+        <button class="popup-btn-close" onclick="closePopup()">X</button>
+        <span id="notification-message">Please mark at least one student's attendance.</span>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+    <script>
+        $(document).ready(function() {
+            // Handle form submission
+            $('#attendanceForm').on('submit', function(event) {
+                event.preventDefault();
+
+                var attendanceData = [];
+                var anyChecked = false;
+
+                // Collect attendance data
+                $('.attendance-checkbox').each(function() {
+                    var studentId = $(this).data('student-id');
+                    var isPresent = $(this).prop('checked');
+                    
+                    if (isPresent) {
+                        anyChecked = true;
+                    }
+
+                    attendanceData.push({
+                        'student_id': studentId,
+                        'present': isPresent
+                    });
+                });
+
+                if (!anyChecked) {
+                    // Show the "No attendance marked" notification
+                    $('#notification-message').text('Please mark at least one student\'s attendance.');
+                    $('#notification').addClass('show');
+
+                    // Hide the notification after 3 seconds
+                    setTimeout(function() {
+                        $('#notification').removeClass('show');
+                    }, 3000);
+
+                } else {
+                    // Process and submit attendance if at least one checkbox is marked
+                    alert('Attendance Submitted!');
+                }
+            });
+
+            // Handle checkbox selection
+            $('.attendance-checkbox').on('change', function() {
+                $(this).closest('tr').toggleClass('selected-row');
+                toggleSubmitButton();
+            });
+
+            // Enable Submit button if attendance has been marked
+            function toggleSubmitButton() {
+                var anyChecked = $('.attendance-checkbox:checked').length > 0;
+                $('.btn-submit').prop('disabled', !anyChecked);
+            }
+        });
+
+        // Close the notification popup manually
+        function closePopup() {
+            $('#notification').removeClass('show');
+        }
+
+        // Redirect to Teacher Dashboard
+        function goBack() {
+            window.location.href = '/teacher_dashboard';  // Replace with the actual Teacher Dashboard URL
+        }
+    </script>
+
+</body>
+</html>
