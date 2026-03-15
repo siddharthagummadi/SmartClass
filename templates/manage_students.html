@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Manage Students - SmartClass</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    <style>
+        body { font-family: 'Inter', sans-serif; background: #f4f6f9; margin:0; }
+        .sidebar { width: 250px; position: fixed; height: 100vh; background: #2c3e50; color: white; padding-top: 20px; }
+        .sidebar h2 { text-align: center; margin-bottom: 30px; font-weight: 700; color: #4facfe; }
+        .sidebar a { display: block; padding: 15px 25px; color: white; text-decoration: none; font-size: 16px; border-left: 4px solid transparent; }
+        .sidebar a:hover { background: #34495e; border-left: 4px solid #4facfe; }
+        .main-content { margin-left: 250px; padding: 40px; }
+        .top-nav { display: flex; justify-content: space-between; align-items: center; background: white; padding: 15px 30px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); border-radius: 10px; margin-bottom: 30px; }
+        .btn { background: #4facfe; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px; font-weight: bold; border: none; cursor: pointer; }
+        .btn-danger { background: #e74c3c; }
+        .btn-danger:hover { background: #c0392b; }
+        .btn-train { background: #27ae60; color: white; padding: 10px 20px; border: none; text-decoration: none; border-radius: 5px; font-weight: bold; cursor: pointer; margin-right: 15px; }
+        .btn-train:hover { background: #2ecc71; }
+        .btn-capture { background: #8e44ad; color: white; padding: 8px 12px; border-radius: 5px; text-decoration: none; font-size: 14px; font-weight: bold; }
+        .btn-capture:hover { background: #9b59b6; }
+        
+        table { width: 100%; border-collapse: collapse; background: white; border-radius: 10px; overflow: hidden; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+        th, td { padding: 15px; text-align: left; border-bottom: 1px solid #ddd; }
+        th { background: #2c3e50; color: white; }
+        tr:hover { background: #f1f1f1; }
+
+        .form-container { background: white; padding: 20px; border-radius: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); margin-bottom: 30px; }
+        .form-container input { padding: 10px; width: 100%; margin: 10px 0; border: 1px solid #ccc; border-radius: 5px; box-sizing: border-box; }
+        
+        /* Mobile Responsiveness */
+        @media (max-width: 768px) {
+            .sidebar { width: 100%; height: auto; position: relative; padding-bottom: 15px; text-align: center; }
+            .sidebar h2 { margin-bottom: 15px; font-size: 22px; }
+            .sidebar a { display: inline-block; padding: 10px 15px; margin: 5px; background: rgba(255,255,255,0.1); border-radius: 5px; font-size: 14px; border: none; }
+            .main-content { margin-left: 0; padding: 20px; }
+            .top-nav { flex-direction: column; text-align: center; gap: 15px; }
+            .top-nav div { display: flex; flex-direction: column; gap: 10px; width: 100%; }
+            .btn-train, .btn-danger { width: 100%; margin: 0; }
+            /* Force table to scroll horizontally on small screens */
+            table { display: block; overflow-x: auto; white-space: nowrap; }
+        }
+    </style>
+</head>
+<body>
+    <div class="sidebar">
+        <h2>SmartClass Admin</h2>
+        <a href="/admin_dashboard"><i class="fa-solid fa-chart-pie"></i> Dashboard</a>
+        <a href="/manage_students"><i class="fa-solid fa-user-graduate"></i> Manage Students</a>
+        <a href="/manage_teachers"><i class="fa-solid fa-chalkboard-user"></i> Manage Teachers</a>
+    </div>
+
+    <div class="main-content">
+        <div class="top-nav">
+            <h2>Manage Students</h2>
+            <div>
+                <button class="btn btn-train" onclick="trainModel()"><i class="fa fa-cogs"></i> Train Face Model</button>
+                <a href="/logout" class="btn btn-danger">Logout</a>
+            </div>
+        </div>
+
+        <div class="form-container">
+            <h3>Add New Student</h3>
+            <form method="POST" action="/manage_students">
+                <input type="hidden" name="action" value="add">
+                <input type="text" name="name" placeholder="Full Name" required>
+                <input type="text" name="roll_no" placeholder="Roll Number" required>
+                <input type="text" name="username" placeholder="Username (for login)" required>
+                <input type="password" name="password" placeholder="Password" required>
+                <button type="submit" class="btn">Add Student</button>
+            </form>
+        </div>
+
+        <h3>Existing Students</h3>
+        <table>
+            <tr>
+                <th>Name</th>
+                <th>Roll Number</th>
+                <th>Username</th>
+                <th>Face Data</th>
+                <th>Action</th>
+            </tr>
+            {% for student in students %}
+            <tr>
+                <td>{{ student.name }}</td>
+                <td>{{ student.roll_no }}</td>
+                <td>{{ student.username }}</td>
+                <td>
+                    <a href="/admin/capture_face/{{ student.user_id }}" class="btn-capture"><i class="fa fa-camera"></i> Capture</a>
+                </td>
+                <td>
+                    <form method="POST" action="/manage_students" style="display:inline;">
+                        <input type="hidden" name="action" value="delete">
+                        <input type="hidden" name="user_id" value="{{ student.user_id }}">
+                        <button type="submit" class="btn btn-danger" onclick="return confirm('Are you sure?')">Delete</button>
+                    </form>
+                </td>
+            </tr>
+            {% endfor %}
+        </table>
+    </div>
+
+    <script>
+        function trainModel() {
+            if(!confirm("Are you sure you want to compile and train the system's face recognition model over all stored image data? This might take a few seconds.")) {
+                return;
+            }
+            
+            fetch('/admin/train_model', { method: 'POST' })
+            .then(res => res.json())
+            .then(data => {
+                if(data.status === 'success') {
+                    alert("Success! " + data.message);
+                } else {
+                    alert("Error: " + data.message);
+                }
+            }).catch(err => alert("Server connection error during training."));
+        }
+    </script>
+</body>
+</html>

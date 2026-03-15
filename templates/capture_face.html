@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Capture Face Data - {{ student_name }}</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #1e3c72, #2a5298);
+            color: white;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            flex-direction: column;
+        }
+        .container {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 40px;
+            border-radius: 15px;
+            text-align: center;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+            backdrop-filter: blur(10px);
+        }
+        h2 { margin-bottom: 20px; }
+        #video {
+            width: 300px;
+            height: 300px;
+            border: 4px solid #4facfe;
+            border-radius: 10px;
+            object-fit: cover;
+            margin-bottom: 20px;
+        }
+        button {
+            padding: 12px 25px;
+            background: #4facfe;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: bold;
+            margin: 10px;
+            transition: 0.3s;
+        }
+        button:hover { background: #00f2fe; }
+        .back-btn { background: #555; }
+        .back-btn:hover { background: #777; }
+        #status { font-weight: bold; color: #f1c40f; margin-top: 10px; }
+        
+        @media (max-width: 768px) {
+            .container { padding: 20px; width: 90%; box-sizing: border-box; }
+            #video { width: 100%; height: auto; max-width: 300px; }
+            button { padding: 10px 15px; font-size: 14px; margin: 5px; width: 100%; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h2>Registering Face: {{ student_name }}</h2>
+        <video id="video" autoplay></video>
+        <div>
+            <button id="capture-btn"><i class="fa fa-camera"></i> Capture Face</button>
+            <button class="back-btn" onclick="window.location.href='/manage_students'">Back</button>
+        </div>
+        <p id="status">Images Collected: 0 / 5</p>
+    </div>
+
+    <script>
+        const video = document.getElementById('video');
+        const captureBtn = document.getElementById('capture-btn');
+        const statusText = document.getElementById('status');
+        let count = 0;
+        const studentId = parseInt("{{ student_id }}", 10);
+
+        // Start Camera
+        navigator.mediaDevices.getUserMedia({ video: true })
+            .then(stream => { video.srcObject = stream; })
+            .catch(err => {
+                alert("Camera access denied!");
+                console.error(err);
+            });
+
+        captureBtn.addEventListener('click', () => {
+            if (count >= 5) {
+                alert("You have already collected 5 images. You can return to the dashboard.");
+                return;
+            }
+
+            const canvas = document.createElement('canvas');
+            canvas.width = video.videoWidth;
+            canvas.height = video.videoHeight;
+            const ctx = canvas.getContext('2d');
+            ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+            const imageData = canvas.toDataURL('image/jpeg');
+
+            statusText.innerText = "Processing...";
+            captureBtn.disabled = true;
+
+            fetch('/admin/save_face', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ student_id: studentId, image: imageData })
+            })
+            .then(res => res.json())
+            .then(data => {
+                captureBtn.disabled = false;
+                if(data.status === 'success') {
+                    count = data.current_count;
+                    statusText.innerText = `Images Collected: ${count} / 5 ✅`;
+                    if(count >= 5) {
+                        statusText.innerText += " (Complete!)";
+                        alert("Face registration complete for this student.");
+                    }
+                } else {
+                    alert("Error: " + data.message);
+                    statusText.innerText = `Images Collected: ${count} / 5 ❌`;
+                }
+            }).catch(err => {
+                captureBtn.disabled = false;
+                alert("Server Error");
+            });
+        });
+    </script>
+</body>
+</html>

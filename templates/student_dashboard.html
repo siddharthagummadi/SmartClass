@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Student Dashboard - SmartClass</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/lottie-web/5.9.6/lottie.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/jsqr/dist/jsQR.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script> <!-- Add Chart.js -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"/>
+  <style>
+    body {
+      margin: 0;
+      font-family: 'Inter', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(135deg, #f5f7fa, #c3cfe2);
+      overflow-x: hidden;
+    }
+    .sidebar {
+      width: 250px;
+      background: linear-gradient(180deg, #0f2027, #203a43, #2c5364);
+      color: white;
+      padding: 20px 0;
+      position: fixed;
+      height: 100%;
+      left: -300px;
+      transition: left 0.4s ease;
+      box-shadow: 5px 0px 20px rgba(0, 0, 0, 0.3);
+      z-index: 999;
+    }
+    .sidebar h2 {
+      text-align: center;
+      font-size: 22px;
+      margin-bottom: 30px;
+      font-weight: 700;
+      letter-spacing: 1px;
+    }
+    .menu-item {
+      padding: 15px 25px;
+      margin-bottom: 5px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 15px;
+      transition: 0.3s;
+      font-size: 16px;
+    }
+    .menu-item i {
+        font-size: 18px;
+        color: #4facfe;
+    }
+    .menu-item:hover {
+      background: rgba(255,255,255,0.1);
+      border-left: 4px solid #4facfe;
+    }
+    .toggle-btn {
+      position: fixed;
+      left: 20px;
+      top: 20px;
+      font-size: 24px;
+      background: #0f2027;
+      color: white;
+      border: none;
+      padding: 10px 15px;
+      cursor: pointer;
+      border-radius: 8px;
+      z-index: 1000;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+      transition: 0.3s;
+    }
+    .toggle-btn:hover {
+      background: #4facfe;
+    }
+    .main-content {
+      padding: 60px 40px;
+      margin-left: 70px;
+      transition: margin-left 0.4s ease;
+      min-height: 100vh;
+    }
+    .welcome-text {
+      font-size: 32px;
+      font-weight: 800;
+      margin-bottom: 10px;
+      color: #0f2027;
+    }
+    .subtitle {
+        color: #555;
+        font-size: 16px;
+        margin-bottom: 40px;
+    }
+    #qr-reader-container {
+      position: fixed;
+      top: 0; left: 0;
+      width: 100vw; height: 100vh;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      background: rgba(0, 0, 0, 0.6);
+      z-index: 2000;
+    }
+    #qr-reader {
+      height: 300px;
+      width: 300px;
+      border: 3px solid white;
+      border-radius: 10px;
+      overflow: hidden;
+      position: relative;
+      background: black;
+    }
+    #qr-reader .scanner-line {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 2px;
+      background-color: rgba(0, 255, 0, 0.8);
+      animation: moveLine 4s linear infinite;
+    }
+    video {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+    @keyframes moveLine {
+      0% { top: 0; }
+      50% { top: 50%; }
+      100% { top: 100%; }
+    }
+    .percentage-display {
+      font-size: 24px;
+      font-weight: bold;
+      color: #2C3E50;
+      margin-top: 20px;
+      display: none;
+      text-align: center;
+    }
+    .percentage-value {
+      color: #1ABC9C;
+      font-size: 32px;
+    }
+    #attendanceChart {
+      width: 400px;
+      height: 400px;
+      margin: 20px auto;
+    }
+    
+    /* Mobile Responsiveness */
+    @media (max-width: 768px) {
+      .main-content { padding: 80px 20px 20px 20px; margin-left: 0 !important; }
+      .welcome-text { font-size: 24px; }
+      .subtitle { font-size: 14px; }
+      #attendanceChart { width: 100% !important; height: auto !important; max-width: 300px; }
+      #qr-reader { width: 90%; height: 300px; }
+      .toggle-btn { top: 15px; left: 15px; font-size: 20px; padding: 8px 12px; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Sidebar -->
+  <div class="sidebar" id="sidebar">
+    <h2>Student Dashboard</h2>
+    <div class="menu-item" id="scanQR">
+      <i class="fa-solid fa-camera"></i> Scan QR Code
+    </div>
+    <div class="menu-item" id="requestManualAttendance">
+      <i class="fa-solid fa-hand-paper"></i> Request Manual Attendance
+    </div>
+    <div class="menu-item" id="checkAttendancePercentage">
+      <i class="fa-solid fa-chart-line"></i> Check Attendance Percentage
+    </div>
+    <div class="menu-item" id="logout">
+      <i class="fa-solid fa-sign-out-alt"></i> Logout
+    </div>
+  </div>
+
+  <!-- Toggle Sidebar -->
+  <button class="toggle-btn" id="sidebarToggle">
+    <i class="fas fa-bars"></i>
+  </button>
+
+  <!-- QR Reader Container -->
+  <div id="qr-reader-container">
+    <div id="qr-reader">
+      <div class="scanner-line"></div>
+      <video id="video" autoplay></video>
+    </div>
+  </div>
+
+  <!-- Main Content -->
+  <div class="main-content" id="mainContent">
+    <h1 class="welcome-text">Student Portal</h1>
+    <p class="subtitle">Access your classes, mark your attendance, and track your progress securely.</p>
+    
+    <div class="percentage-display" id="attendanceDisplay">
+      <p style="font-size: 18px; color: #555;">Current Attendance Rate</p>
+      <div class="percentage-value" id="attendanceValue" style="margin-bottom: 20px;">0%</div>
+      <!-- Doughnut Chart for Attendance Percentage -->
+      <canvas id="attendanceChart"></canvas>
+    </div>
+  </div>
+
+  <script>
+    // Sidebar toggle
+    document.getElementById("sidebarToggle").addEventListener("click", function () {
+      const sidebar = document.getElementById("sidebar");
+      const mainContent = document.getElementById("mainContent");
+
+      if (sidebar.style.left === "0px") {
+        sidebar.style.left = "-300px";
+        if(window.innerWidth > 768) mainContent.style.marginLeft = "50px";
+      } else {
+        sidebar.style.left = "0px";
+        if(window.innerWidth > 768) mainContent.style.marginLeft = "300px";
+      }
+    });
+
+    // QR Scanner logic
+    let videoElement = document.getElementById('video');
+    let qrContainer = document.getElementById('qr-reader-container');
+    let canvas = document.createElement('canvas');
+    let context = canvas.getContext('2d');
+
+    function startQrScanner() {
+      qrContainer.style.display = 'flex';
+
+      navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } })
+        .then((stream) => {
+          videoElement.srcObject = stream;
+          videoElement.play();
+          requestAnimationFrame(scanQRCode);
+
+          // auto close after 10s
+          setTimeout(() => {
+            stopQrScanner();
+          }, 10000);
+        })
+        .catch((error) => {
+          alert("❌ Camera error: " + error);
+        });
+    }
+
+    function scanQRCode() {
+      if (videoElement.readyState === videoElement.HAVE_ENOUGH_DATA) {
+        canvas.width = videoElement.videoWidth;
+        canvas.height = videoElement.videoHeight;
+        context.drawImage(videoElement, 0, 0, canvas.width, canvas.height);
+        let imageData = context.getImageData(0, 0, canvas.width, canvas.height);
+        let code = jsQR(imageData.data, canvas.width, canvas.height);
+        if (code) {
+          // Send QR code to backend for validation
+          fetch('/validate_qr', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ qr_code: code.data })
+          })
+          .then(response => response.json())
+          .then(data => {
+            if (data.status === 'valid') {
+              window.location.href = '/face_recognition';
+            } else {
+              alert("❌ Invalid or Expired QR Code.");
+            }
+          })
+          .catch(error => {
+            alert("❌ Error verifying QR Code: " + error);
+          });
+          
+          stopQrScanner();
+          return;
+        }
+      }
+      requestAnimationFrame(scanQRCode);
+    }
+
+    function stopQrScanner() {
+      qrContainer.style.display = 'none';
+      let stream = videoElement.srcObject;
+      if (stream) {
+        stream.getTracks().forEach(track => track.stop());
+        videoElement.srcObject = null;
+      }
+    }
+
+    // Button events
+    document.getElementById("scanQR").addEventListener("click", startQrScanner);
+    
+    // Store chart instance to destroy it before re-rendering
+    let attendanceChartInstance = null;
+    
+    document.getElementById("checkAttendancePercentage").addEventListener("click", () => {
+      document.getElementById("attendanceDisplay").style.display = "block";
+
+      // Fetch live attendance percentage from backend
+      fetch('/api/student_attendance')
+        .then(response => response.json())
+        .then(data => {
+            if (data.status === 'success') {
+                let attendancePercentage = data.percentage;
+                document.getElementById("attendanceValue").innerText = `${attendancePercentage}%`;
+                
+                let ctx = document.getElementById('attendanceChart').getContext('2d');
+                
+                if (attendanceChartInstance) {
+                    attendanceChartInstance.destroy();
+                }
+
+                attendanceChartInstance = new Chart(ctx, {
+                    type: 'doughnut',
+                    data: {
+                    labels: ['Attended', 'Not Attended'],
+                    datasets: [{
+                        data: [attendancePercentage, 100 - attendancePercentage],
+                        backgroundColor: ['#1ABC9C', '#e74c3c'],
+                        borderColor: ['#ffffff', '#ffffff'],
+                        borderWidth: 2
+                    }]
+                    },
+                    options: {
+                    responsive: true,
+                    cutoutPercentage: 70, // Makes the chart look like a doughnut
+                    plugins: {
+                        legend: { position: 'bottom' },
+                        tooltip: {
+                            callbacks: {
+                                label: function(tooltipItem) {
+                                    return tooltipItem.label + ': ' + tooltipItem.raw + '%';
+                                }
+                            }
+                        }
+                    }
+                    }
+                });
+            } else {
+                alert("Could not fetch attendance data.");
+            }
+        })
+        .catch(error => console.error("Error fetching attendance:", error));
+    });
+    document.getElementById("requestManualAttendance").addEventListener("click", () => {
+      alert("📨 Manual Attendance Request Sent.");
+    });
+    document.getElementById("logout").addEventListener("click", () => {
+      window.location.href = "/logout";
+    });
+  </script>
+</body>
+</html>

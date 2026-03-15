@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Admin Dashboard - SmartClass</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    <style>
+        body { font-family: 'Inter', sans-serif; background: #f4f6f9; margin:0; }
+        .sidebar { width: 250px; position: fixed; height: 100vh; background: #2c3e50; color: white; padding-top: 20px; }
+        .sidebar h2 { text-align: center; margin-bottom: 30px; font-weight: 700; color: #4facfe; }
+        .sidebar a { display: block; padding: 15px 25px; color: white; text-decoration: none; font-size: 16px; border-left: 4px solid transparent; }
+        .sidebar a:hover { background: #34495e; border-left: 4px solid #4facfe; }
+        .main-content { margin-left: 250px; padding: 40px; }
+        .top-nav { display: flex; justify-content: space-between; align-items: center; background: white; padding: 15px 30px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); border-radius: 10px; margin-bottom: 30px; }
+        .btn-logout { background: #e74c3c; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px; font-weight: bold; }
+        .btn-logout:hover { background: #c0392b; }
+        .stats-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
+        .stat-card { background: white; padding: 30px; border-radius: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); text-align: center; }
+        .stat-card i { font-size: 40px; color: #4facfe; margin-bottom: 15px; }
+        .stat-card h3 { margin: 0; font-size: 24px; color: #2c3e50; }
+        .stat-card p { margin: 5px 0 0; color: #7f8c8d; font-size: 16px; }
+
+        /* Mobile Responsiveness */
+        @media (max-width: 768px) {
+            .sidebar { width: 100%; height: auto; position: relative; padding-bottom: 15px; text-align: center; }
+            .sidebar h2 { margin-bottom: 15px; font-size: 22px; }
+            .sidebar a { display: inline-block; padding: 10px 15px; margin: 5px; background: rgba(255,255,255,0.1); border-radius: 5px; font-size: 14px; border: none; }
+            .main-content { margin-left: 0; padding: 20px; }
+            .stats-grid { grid-template-columns: 1fr; }
+            .top-nav { flex-direction: column; text-align: center; gap: 15px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="sidebar">
+        <h2>SmartClass Admin</h2>
+        <a href="/admin_dashboard"><i class="fa-solid fa-chart-pie"></i> Dashboard</a>
+        <a href="/manage_students"><i class="fa-solid fa-user-graduate"></i> Manage Students</a>
+        <a href="/manage_teachers"><i class="fa-solid fa-chalkboard-user"></i> Manage Teachers</a>
+    </div>
+
+    <div class="main-content">
+        <div class="top-nav">
+            <h2>Dashboard Overview</h2>
+            <a href="/logout" class="btn-logout">Logout</a>
+        </div>
+
+        <div class="stats-grid">
+            <div class="stat-card">
+                <i class="fa-solid fa-users"></i>
+                <h3>{{ total_students }}</h3>
+                <p>Total Students</p>
+            </div>
+            <div class="stat-card">
+                <i class="fa-solid fa-chalkboard-teacher"></i>
+                <h3>{{ total_teachers }}</h3>
+                <p>Total Teachers</p>
+            </div>
+            <div class="stat-card">
+                <i class="fa-solid fa-calendar-check"></i>
+                <h3>{{ total_attendance }}</h3>
+                <p>Attendance Records</p>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

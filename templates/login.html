@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SmartClass Login</title>
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        }
+        body {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background: linear-gradient(135deg, #0f2027, #203a43, #2c5364);
+            color: #ffffff;
+            overflow: hidden;
+        }
+        .top-bar {
+            width: 100%;
+            height: 70px;
+            background: rgba(15, 32, 39, 0.7);
+            backdrop-filter: blur(15px);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 40px;
+            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.5);
+            position: fixed;
+            top: 0;
+            left: 0;
+            z-index: 1000;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+        .logo-container {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        .logo {
+            width: 45px;
+            height: 45px;
+            background: linear-gradient(135deg, #00f2fe, #4facfe);
+            color: white;
+            font-size: 22px;
+            font-weight: 800;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(79, 172, 254, 0.4);
+        }
+        .title {
+            font-size: 24px;
+            font-weight: 700;
+            color: #ffffff;
+            letter-spacing: 1px;
+        }
+        .container {
+            flex: 1;
+            display: flex;
+            flex-wrap: wrap;
+            width: 90%;
+            max-width: 1200px;
+            align-items: center;
+            justify-content: space-between;
+            margin-top: 70px;
+        }
+        .hero-section {
+            width: 50%;
+            padding: 40px;
+            text-align: left;
+            animation: fadeIn 1s ease-out forwards;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateX(-30px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+        .hero-section h1 {
+            font-size: 48px;
+            font-weight: 800;
+            background: -webkit-linear-gradient(#00f2fe, #4facfe);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 15px;
+            line-height: 1.2;
+        }
+        .description {
+            font-size: 18px;
+            margin-bottom: 30px;
+            color: #b0c4de;
+            line-height: 1.6;
+        }
+        .features {
+            list-style: none;
+        }
+        .features li {
+            font-size: 18px;
+            color: #e0e0e0;
+            padding: 10px 0;
+            display: flex;
+            align-items: center;
+        }
+        .features li::before {
+            content: "\f00c"; 
+            font-family: "Font Awesome 6 Free";
+            font-weight: 900;
+            color: #4facfe; 
+            margin-right: 12px;
+            font-size: 20px;
+            background: rgba(79, 172, 254, 0.2);
+            padding: 5px;
+            border-radius: 50%;
+        }
+        .login-container {
+            width: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 40px;
+            animation: slideIn 1s ease-out forwards;
+        }
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .login-box {
+            width: 100%;
+            max-width: 420px;
+            padding: 40px;
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            box-shadow: 0px 15px 35px rgba(0, 0, 0, 0.5);
+            transition: transform 0.3s ease;
+        }
+        .login-box:hover {
+            transform: translateY(-5px);
+        }
+        .login-box h2 {
+            text-align: center;
+            color: #ffffff;
+            font-size: 28px;
+            font-weight: 700;
+            margin-bottom: 30px;
+        }
+        .input-group {
+            position: relative;
+            margin-bottom: 25px;
+        }
+        .input-group input {
+            width: 100%;
+            padding: 15px 15px 15px 45px;
+            background: rgba(0, 0, 0, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 10px;
+            font-size: 16px;
+            color: white;
+            transition: all 0.3s;
+        }
+        .input-group input:focus {
+            outline: none;
+            border-color: #4facfe;
+            background: rgba(0, 0, 0, 0.4);
+            box-shadow: 0 0 10px rgba(79, 172, 254, 0.3);
+        }
+        .input-group input::placeholder {
+            color: #a0a0a0;
+        }
+        .input-icon {
+            position: absolute;
+            left: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #a0a0a0;
+            font-size: 16px;
+        }
+        .eye-icon {
+            position: absolute;
+            right: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            cursor: pointer;
+            font-size: 14px;
+            color: #4facfe;
+            font-weight: bold;
+            user-select: none;
+        }
+        .login-btn {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(135deg, #00f2fe, #4facfe);
+            color: white;
+            font-size: 18px;
+            font-weight: 600;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 5px 15px rgba(79, 172, 254, 0.4);
+        }
+        .login-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(79, 172, 254, 0.6);
+        }
+        .footer {
+            width: 100%;
+            text-align: center;
+            padding: 15px;
+            position: absolute;
+            bottom: 0;
+            font-size: 14px;
+            color: #888;
+            background: rgba(0, 0, 0, 0.3);
+            backdrop-filter: blur(5px);
+        }
+        .error-message {
+            color: red;
+            font-size: 14px;
+            margin-top: 10px;
+            text-align: center;
+        }
+
+        /* Mobile Responsiveness */
+        @media (max-width: 768px) {
+            .container { flex-direction: column; justify-content: flex-start; margin-top: 90px; }
+            .hero-section { width: 100%; padding: 20px; text-align: center; }
+            .hero-section h1 { font-size: 32px; }
+            .features li { justify-content: center; font-size: 16px; }
+            .login-container { width: 100%; padding: 20px; }
+            .login-box { padding: 30px; }
+            body { height: auto; overflow-y: auto; padding-bottom: 60px; }
+            .footer { position: relative; }
+        }
+    </style>
+</head>
+<body>
+    <!-- Top Bar -->
+    <div class="top-bar">
+        <div class="logo-container">
+            <div class="logo">SC</div>
+            <span class="title">SmartClass</span>
+        </div>
+    </div>
+
+    <div class="container">
+        <!-- Hero Section -->
+        <div class="hero-section">
+            <h1>Next-Gen Attendance <br>Made Simple.</h1>
+            <p class="description">Secure, efficient, and seamless workflow for the modern educational ecosystem. Say goodbye to manual roll calls.</p>
+            <ul class="features">
+                <li>Dynamic QR Verification</li>
+                <li>Biometric AI Core</li>
+                <li>Live Data Dashboards</li>
+            </ul>
+        </div>
+
+        <!-- Login Section -->
+        <div class="login-container">
+            <div class="login-box">
+                <h2>Welcome Back</h2>
+                <form action="/login" method="POST">
+                    <div class="input-group">
+                        <i class="fa-solid fa-user input-icon"></i>
+                        <input type="text" name="username" id="username" placeholder="Enter your username" required>
+                    </div>
+                    <div class="input-group">
+                        <i class="fa-solid fa-lock input-icon"></i>
+                        <input type="password" name="password" id="password" placeholder="Enter your password" required>
+                        <span class="eye-icon" id="eyeText" onclick="togglePassword()">Show</span>
+                    </div>
+                    {% if error %}
+                        <div class="error-message">{{ error }}</div>
+                    {% endif %}
+                    <button class="login-btn" type="submit">Sign In to Dashboard</button>
+                    <div style="text-align: center; margin-top: 15px; font-size: 13px; color: #aaa;">
+                        Secure login for Teachers & Students
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <div class="footer">
+        &copy; 2025 SmartClass. All rights reserved.
+    </div>
+
+    <script>
+        function togglePassword() {
+            let passwordField = document.getElementById("password");
+            let eyeText = document.getElementById("eyeText");
+
+            if (passwordField.type === "password") {
+                passwordField.type = "text";
+                eyeText.textContent = "Hide";
+            } else {
+                passwordField.type = "password";
+                eyeText.textContent = "Show";
+            }
+        }
+    </script>
+</body>
+</html>

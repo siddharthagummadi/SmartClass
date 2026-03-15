@@ -1,0 +1,8 @@
+Flask
+mysql-connector-python
+Werkzeug
+opencv-python
+pandas
+openpyxl
+reportlab
+numpy
