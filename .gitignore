@@ -6,3 +6,4 @@ __pycache__/
 trainer.yml
 .env
 face_data/
+data/
