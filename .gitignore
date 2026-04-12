@@ -7,3 +7,8 @@ trainer.yml
 .env
 face_data/
 data/
+.vscode/
+.idea/
+*.log
+venv/
+env/
