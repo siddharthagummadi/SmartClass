@@ -34,9 +34,9 @@
 <body>
     <div class="sidebar">
         <h2>SmartClass Admin</h2>
-        <a href="/admin_dashboard"><i class="fa-solid fa-chart-pie"></i> Dashboard</a>
-        <a href="/manage_students"><i class="fa-solid fa-user-graduate"></i> Manage Students</a>
-        <a href="/manage_teachers"><i class="fa-solid fa-chalkboard-user"></i> Manage Teachers</a>
+        <a href="{{ url_for('admin_dashboard') }}"><i class="fa-solid fa-chart-pie"></i> Dashboard</a>
+        <a href="{{ url_for('manage_students') }}"><i class="fa-solid fa-user-graduate"></i> Manage Students</a>
+        <a href="{{ url_for('manage_teachers') }}"><i class="fa-solid fa-chalkboard-user"></i> Manage Teachers</a>
     </div>
 
     <div class="main-content">

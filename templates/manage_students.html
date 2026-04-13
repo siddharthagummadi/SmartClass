@@ -45,9 +45,9 @@
 <body>
     <div class="sidebar">
         <h2>SmartClass Admin</h2>
-        <a href="/admin_dashboard"><i class="fa-solid fa-chart-pie"></i> Dashboard</a>
-        <a href="/manage_students"><i class="fa-solid fa-user-graduate"></i> Manage Students</a>
-        <a href="/manage_teachers"><i class="fa-solid fa-chalkboard-user"></i> Manage Teachers</a>
+        <a href="{{ url_for('admin_dashboard') }}"><i class="fa-solid fa-chart-pie"></i> Dashboard</a>
+        <a href="{{ url_for('manage_students') }}"><i class="fa-solid fa-user-graduate"></i> Manage Students</a>
+        <a href="{{ url_for('manage_teachers') }}"><i class="fa-solid fa-chalkboard-user"></i> Manage Teachers</a>
     </div>
 
     <div class="main-content">
@@ -61,7 +61,7 @@
 
         <div class="form-container">
             <h3>Add New Student</h3>
-            <form method="POST" action="/manage_students">
+            <form method="POST" action="{{ url_for('manage_students') }}">
                 <input type="hidden" name="action" value="add">
                 <input type="text" name="name" placeholder="Full Name" required>
                 <input type="text" name="roll_no" placeholder="Roll Number" required>
@@ -77,6 +77,7 @@
                 <th>Name</th>
                 <th>Roll Number</th>
                 <th>Username</th>
+                <th>Samples</th>
                 <th>Face Data</th>
                 <th>Action</th>
             </tr>
@@ -86,13 +87,21 @@
                 <td>{{ student.roll_no }}</td>
                 <td>{{ student.username }}</td>
                 <td>
-                    <a href="/admin/capture_face/{{ student.user_id }}" class="btn-capture"><i class="fa fa-camera"></i> Capture</a>
+                    <span style="font-weight: bold; color: {% if student.sample_count >= 5 %}#27ae60{% elif student.sample_count > 0 %}#f39c12{% else %}#e74c3c{% endif %};">
+                        {{ student.sample_count }} / 5
+                    </span>
                 </td>
                 <td>
-                    <form method="POST" action="/manage_students" style="display:inline;">
+                    <div style="display: flex; gap: 10px;">
+                        <a href="/admin/capture_face/{{ student.user_id }}" class="btn-capture"><i class="fa fa-camera"></i> Capture</a>
+                        <button class="btn btn-danger" style="padding: 8px 12px; font-size: 14px;" onclick="clearFaceData('{{ student.user_id }}')"><i class="fa fa-trash"></i> Clear</button>
+                    </div>
+                </td>
+                <td>
+                    <form method="POST" action="{{ url_for('manage_students') }}" style="display:inline;">
                         <input type="hidden" name="action" value="delete">
                         <input type="hidden" name="user_id" value="{{ student.user_id }}">
-                        <button type="submit" class="btn btn-danger" onclick="return confirm('Are you sure?')">Delete</button>
+                        <button type="submit" class="btn btn-danger" onclick="return confirm('Are you sure you want to delete this student and their login account?')">Delete</button>
                     </form>
                 </td>
             </tr>
@@ -110,11 +119,26 @@
             .then(res => res.json())
             .then(data => {
                 if(data.status === 'success') {
-                    alert("Success! " + data.message);
+                    alert("Success! " + data.message + "\n\n" + data.details);
                 } else {
                     alert("Error: " + data.message);
                 }
             }).catch(err => alert("Server connection error during training."));
+        }
+
+        function clearFaceData(userId) {
+            if(!confirm("Are you sure you want to delete all captured face images for this student? This cannot be undone.")) {
+                return;
+            }
+
+            fetch(`/admin/clear_face_data/${userId}`, { method: 'POST' })
+            .then(res => res.json())
+            .then(data => {
+                alert(data.message);
+                if(data.status === 'success') {
+                    location.reload();
+                }
+            }).catch(err => alert("Server error while clearing data."));
         }
     </script>
 </body>
